@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Puzzle Game</title>
+<style>
+body {
+ /* margin: 0;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  background: linear-gradient(120deg, #fcc8dd, #adcbe9);
+  overflow: hidden;
+  text-align: center;
+
+  color: #333;
+  */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* prend toute la hauteur de l'écran */
+  margin: 0;
+  background: linear-gradient(120deg, #fcc8dd, #adcbe9);
+}
+/*
+
+ background: linear-gradient(120deg, #ffeff7, #fff5e1);
+.balloon {
+  position: fixed;
+  width: 50px;
+  height: 70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffb7d5, #ff69b4);
+  animation: float 10s linear infinite;
+  opacity: 0.85;
+}
+@keyframes float {
+  0% { transform: translateY(120vh) rotate(0deg); }
+  100% { transform: translateY(-20vh) rotate(20deg); }
+}
+
+.balloon {
+  position: fixed;
+  width: 50px;
+  height: 70px;
+  border-radius: 50%;
+  animation: float 10s linear infinite;
+  opacity: 0.85;
+}
+
+
+@keyframes float {
+  0% { transform: translateY(100vh) translateX(0); }
+  100% { transform: translateY(-150px) translateX(100px); }
+}
+*/
+
+
+.balloon {
+  position: fixed;
+  width: 50px;
+  height: 70px;
+  border-radius: 50%;
+  animation: float linear infinite;
+  opacity: 0.85;
+}
+
+@keyframes float {
+  0% { transform: translateY(100vh) translateX(0); }
+  100% { transform: translateY(-150px) translateX(50px); }
+}
+.star {
+  position: fixed;
+  width: 4px;   /* taille moyenne */
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle 2s infinite alternate;
+  opacity: 0.6;
+  z-index: 0;   /* derrière */
+}
+
+@keyframes twinkle {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+
+
+/* Cœurs rouges corrects */
+.heart {
+  position: fixed;
+  width: 20px;   /* taille moyenne */
+  height: 20px;
+  background: red;
+  transform: rotate(-45deg);
+  animation: floatHeart 5s linear infinite;
+  z-index: 0; /* derrière */
+}
+.heart::before,
+.heart::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: red;
+  border-radius: 50%;
+}
+.heart::before {
+  top: -10px;
+  left: 0;
+}
+.heart::after {
+  left: 10px;
+  top: 0;
+}
+
+@keyframes floatHeart {
+  0% { transform: translateY(100vh) rotate(-45deg); opacity:0.8;}
+  100% { transform: translateY(-50px) rotate(-45deg); opacity:0; }
+}
+.firework {
+  position: fixed;
+  width: 5px;
+  height: 5px;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: explode 1s ease-out forwards;
+}
+@keyframes explode {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(20); }
+}
+/*.page {
+  display: none;
+  padding: 20px;
+  max-width: 500px;
+  width: 90%;
+  margin: auto;
+  background: rgba(255,255,255,0.6);
+  border-radius: 15px;
+  backdrop-filter: blur(6px);
+}*/
+.page {
+  display: none; /* tu pourras l'afficher via JS */
+  padding: 20px;
+  max-width: 500px;  /* largeur max sur grand écran */
+  width: 90%;        /* largeur sur petits écrans */
+  margin: auto;
+  background: rgba(255,255,255,0.6);
+  border-radius: 15px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+/* Texte responsive */
+.page h1 {
+  font-size: 1.5rem;
+}
+
+.page p {
+  font-size: 1rem;
+}
+
+/* Ajustement sur très petits écrans */
+@media (max-width: 400px) {
+  .page {
+    padding: 15px;
+    font-size: 0.9rem;
+  }
+}
+#puzzleGrid {
+  display: grid;
+  gap: 2px;
+  margin: 15px auto;
+}
+.piece {
+  width: 100%;
+  aspect-ratio: 1;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: .2s;
+}
+.piece:hover { transform: scale(1.05); }
+button {
+  padding: 12px 25px;
+  font-size: 18px;
+  border: none;
+  background: #ff69b4;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+input {
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 2px solid #ffb6c1;
+}
+h1 { color: #ff69b4; }
+</style>
+</head>
+<body>
+
+<script>
+// Balloons
+//for(let i = 0; i < 10; i++){
+  //const b = document.createElement("div");
+  //b.className = "balloon";
+  //b.style.left = Math.random() * 90 + "%";
+  //b.style.animationDelay = Math.random()*5 + "s";
+  //document.body.appendChild(b);
+function randomColor() {
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  return `radial-gradient(circle, rgb(${r},${g},${b}), rgb(${Math.floor(r/2)},${Math.floor(g/2)},${Math.floor(b/2)}))`;
+}
+
+for(let i=0; i<20; i++) {
+  const balloon = document.createElement('div');
+  balloon.classList.add('balloon');
+  balloon.style.left = Math.random() * window.innerWidth + 'px';
+  balloon.style.background = randomColor();
+  balloon.style.animationDuration = (8 + Math.random() * 5) + 's';
+  document.body.appendChild(balloon);
+}
+
+// --- Etoiles ---
+for(let i=0; i<30; i++) {  // taille moyenne
+  const star = document.createElement('div');
+  star.classList.add('star');
+  star.style.left = Math.random() * window.innerWidth + 'px';
+  star.style.top = Math.random() * window.innerHeight + 'px';
+  star.style.animationDuration = (1 + Math.random()*2) + 's';
+  document.body.appendChild(star);
+}
+
+
+
+// --- Cœurs rouges ---
+function launchHeart() {
+  const heart = document.createElement('div');
+  heart.classList.add('heart');
+  heart.style.left = Math.random() * window.innerWidth + 'px';
+  document.body.appendChild(heart);
+  setTimeout(()=> heart.remove(), 5000);
+}
+setInterval(launchHeart, 1200);
+</script>
+
+<!-- Musiques -->
+<audio id="musicMain" loop>
+  <source src="phot/Happy Birthday.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="musicFinal" loop>
+  <source src="phot/happy-birthday-lofi-version-222774.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Pages -->
+<div id="passwordPage" class="page">
+  <h1>Enter the Secret</h1>
+  <p>The first time we met in person ❤️ <br/> [date with the month written in letters]</p>
+  <input id="passwordInput" type="text" placeholder="Enter password"><br><br>
+  <button id="enterBtn">Enter</button>
+  <p id="error" style="color:red;"></p>
+</div>
+
+<div id="puzzlePage" class="page">
+  <h1>🎉 🫣 Solve the Puzzle 🥰 🎉</h1>
+  <div id="puzzleGrid"></div>
+  <button id="shuffle">Shuffle Again</button>
+</div>
+
+<div id="finalPage" class="page">
+  <h1>🎂 Happy Birthday 🎂</h1>
+  <p>
+    🎉 Happy Birthday <b>Walid</b>🎉 <br/>
+  
+🎊 May this new year bring you the strength to move forward,
+You are an incredible and truly exceptional person.✨
+I wish you happiness, endless beautiful memories. 
+ 
+May your dreams find their way,
+and your smile open doors you've never imagined.
+Today, the world is brighter…
+because it's your day. 🎊 <br/>
+Thank you for being you.🎁🥳❤️😘
+  </p>
+</div>
+
+<script>
+const password = "18 November 2024";
+const musicMain = document.getElementById("musicMain");
+const musicFinal = document.getElementById("musicFinal");
+const enterBtn = document.getElementById("enterBtn");
+
+// Lecture musique principale après clic Enter
+enterBtn.addEventListener("click", ()=> {
+  const val = document.getElementById("passwordInput").value.trim();
+  if(val.toLowerCase() === password.toLowerCase()){
+    show("puzzlePage");
+    shufflePuzzle();
+
+      musicMain.currentTime = 0;
+      musicMain.play()
+        .then(()=> console.log("Musique lancée 🎵"))
+        .catch(err => console.log("Lecture bloquée :", err));
+
+  } else {
+    document.getElementById("error").innerText = "Oops! Incorrect password, Ask Rania 🫣🙃";
+  }
+});
+
+function show(id){
+  document.querySelectorAll(".page").forEach(p => p.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+
+/* Puzzle */
+const size = 4;
+let order = [...Array(size*size).keys()];
+let first = null;
+const img = new Image();
+img.src = "phot/Happy.jpg";
+
+img.onload = () => {
+  const grid = document.getElementById("puzzleGrid");
+
+  function createPuzzle(){
+    grid.innerHTML = "";
+    grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    order.forEach((val,index)=>{
+      const piece = document.createElement("div");
+      piece.className = "piece";
+      const posX = (val % size) * (100 / (size-1));
+      const posY = Math.floor(val / size) * (100 / (size-1));
+      piece.style.backgroundImage = `url(${img.src})`;
+      piece.style.backgroundSize = `${size*100}% ${size*100}%`;
+      piece.style.backgroundPosition = `${posX}% ${posY}%`;
+      piece.onclick = ()=> movePiece(index);
+      grid.appendChild(piece);
+    });
+  }
+
+  function shufflePuzzle(){
+    for(let i = order.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [order[i],order[j]] = [order[j],order[i]];
+           }
+    createPuzzle();
+  }
+
+  function movePiece(index){
+    if(first === null){
+      first = index;
+      document.querySelectorAll(".piece")[index].style.outline = "3px solid #ff69b4";
+      return;
+    }
+    document.querySelectorAll(".piece")[first].style.outline = "";
+    [order[first],order[index]] = [order[index],order[first]];
+    first = null;
+    createPuzzle();
+    checkSolved();
+  }
+
+  function checkSolved(){
+    if(order.every((v,i)=>v===i)){
+      show("finalPage");
+      launchFireworks();
+      // Arrêt de la musique principale
+      musicMain.pause();
+      musicMain.currentTime = 0;
+      // Lancement de la musique finale
+      musicFinal.currentTime = 0;
+      musicFinal.play()
+        .then(()=> console.log("Musique finale lancée 🎵"))
+        .catch(err => console.log("Lecture finale bloquée :", err));
+    }
+  }
+
+  document.getElementById("shuffle").addEventListener("click", shufflePuzzle);
+
+  shufflePuzzle();
+};
+
+show("passwordPage");
+
+function launchFireworks(){
+  setInterval(()=>{
+    const f = document.createElement("div");
+    f.className = "firework";
+    f.style.left = Math.random()*100 + "%";
+    f.style.top = Math.random()*100 + "%";
+    document.body.appendChild(f);
+    setTimeout(()=>f.remove(),1000);
+  },300);
+}
+</script>
+</body>
+</html>
